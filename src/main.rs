@@ -3,6 +3,8 @@ use bevy::{
     asset::LoadState,
 };
 
+use std::f32::consts;
+
 #[derive(Component)]
 struct Bird {
     speed: f32,
@@ -124,6 +126,12 @@ fn bird_movement(
         bird.speed = FLAP;
     }
     trans.translation.y += bird.speed;
+    let angle = if bird.speed > -1. {
+        consts::FRAC_PI_8
+    } else {
+        (bird.speed + 2.).atan() * 0.8
+    };
+    trans.rotation = Quat::from_rotation_z(angle);
     bird.speed -= GRAVITY;
     // terminal velocity?
 }
