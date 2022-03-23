@@ -7,6 +7,12 @@ struct Bird {
 
 fn main() {
     App::new()
+        // TODO: load in background then size window to it
+        .insert_resource(WindowDescriptor {
+            width: 288.,
+            height: 512.,
+            ..Default::default()
+        })
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
         .add_system(bird_movement)
@@ -20,6 +26,10 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         ..Default::default()
     })
     .insert(Bird { speed: 0. });
+    commands.spawn_bundle(SpriteBundle {
+        texture: assets.load("sprites/background-day.png"),
+        ..Default::default()
+    });
 }
 
 fn bird_movement(
