@@ -2,13 +2,16 @@ use bevy::{
     prelude::*,
     asset::LoadState,
 };
-
 use std::f32::consts;
+use fastrand;
 
 #[derive(Component)]
 struct Bird {
     speed: f32,
 }
+
+#[derive(Component)]
+struct Pipe;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum AppState {
@@ -20,6 +23,9 @@ enum AppState {
 struct SpriteHandles {
     handles: Vec<HandleUntyped>,
 }
+
+#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
+struct PipeSpawnLabel;
 
 fn main() {
     App::new()
@@ -37,7 +43,10 @@ fn main() {
         .add_system_set(SystemSet::on_enter(AppState::Finished).with_system(setup))
         .add_system_set(SystemSet::on_update(AppState::Finished)
                         .with_system(bird_movement)
-                        .with_system(bird_animation))
+                        .with_system(bird_animation)
+                        .with_system(spawn_pipes.label(PipeSpawnLabel))
+                        .with_system(pipe_movement.after(PipeSpawnLabel))
+                        )
         .run();
 }
 
@@ -99,6 +108,70 @@ fn setup(
     });
 }
 
+struct PipeSpawnTimer {
+    timer: Timer
+}
+
+impl Default for PipeSpawnTimer {
+    fn default() -> Self {
+        PipeSpawnTimer {
+            timer: Timer::from_seconds(1.25, true),
+        }
+    }
+}
+
+fn spawn_pipes(
+    time: Res<Time>,
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut timer: Local<PipeSpawnTimer>,
+    ) {
+    if timer.timer.tick(time.delta()).finished() {
+        // TODO: math out these constants
+        const PIPE_GAP: f32 = 450.;
+        const PIPE_Y_ADJUST: f32 = -340.;
+        const PIPE_Y_RANGE: f32 = 256.;
+        let y = fastrand::f32() * PIPE_Y_RANGE + PIPE_Y_ADJUST;
+        let mut transform = Transform {
+            translation: Vec3::new(200., y, 0.),
+            ..Default::default()
+        };
+        let texture = assets.get_handle("sprites/pipe-green.png");
+        let bottom = SpriteBundle {
+            texture: texture.clone(),
+            transform,
+            ..Default::default()
+        };
+
+        transform.translation.y += PIPE_GAP;
+        let top = SpriteBundle {
+            texture,
+            transform,
+            sprite: Sprite {
+                flip_y: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        commands.spawn_bundle(bottom).insert(Pipe);
+        commands.spawn_bundle(top).insert(Pipe);
+    }
+}
+
+fn pipe_movement(
+    mut pipes: Query<(&mut Transform, Entity), With<Pipe>>,
+    mut commands: Commands,
+    ) {
+    for (mut transform, entity) in pipes.iter_mut() {
+        let x = &mut transform.translation.x;
+        if *x < -500. {
+            commands.entity(entity).despawn();
+        } else {
+            *x -= 2.;
+        }
+    }
+}
+
 fn bird_animation(
     time: Res<Time>,
     mut query: Query<(&mut Timer, &mut TextureAtlasSprite)>,
@@ -119,8 +192,8 @@ fn bird_movement(
     mut bird: Query<(&mut Bird, &mut Transform)>,
     keyboard: Res<Input<KeyCode>>,
     ) {
-    const GRAVITY: f32 = 0.15;
-    const FLAP: f32 = 3.;
+    const GRAVITY: f32 = 0.13;
+    const FLAP: f32 = 2.9;
     let (mut bird, mut trans) = bird.single_mut();
     if keyboard.pressed(KeyCode::Space) {
         bird.speed = FLAP;
