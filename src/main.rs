@@ -16,7 +16,8 @@ struct Pipe;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum AppState {
     Setup,
-    Finished,
+    Waiting,
+    Playing,
 }
 
 #[derive(Default)]
@@ -40,8 +41,8 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_system_set(SystemSet::on_enter(AppState::Setup).with_system(load_sprites))
         .add_system_set(SystemSet::on_update(AppState::Setup).with_system(check_loading))
-        .add_system_set(SystemSet::on_enter(AppState::Finished).with_system(setup))
-        .add_system_set(SystemSet::on_update(AppState::Finished)
+        .add_system_set(SystemSet::on_enter(AppState::Waiting).with_system(setup))
+        .add_system_set(SystemSet::on_update(AppState::Playing)
                         .with_system(bird_movement)
                         .with_system(bird_animation)
                         .with_system(spawn_pipes.label(PipeSpawnLabel))
@@ -60,7 +61,7 @@ fn check_loading(
     assets: Res<AssetServer>,
     ) {
     if let LoadState::Loaded = assets.get_group_load_state(sprites.handles.iter().map(|handle| handle.id)) {
-        state.set(AppState::Finished).unwrap();
+        state.set(AppState::Waiting).unwrap();
     }
 }
 
@@ -69,6 +70,7 @@ fn setup(
     assets: Res<AssetServer>,
     mut atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
+    mut state: ResMut<State<AppState>>,
     ) {
     const BIRD_SPRITES: [&str; 3] = [
         "sprites/bluebird-upflap.png",
@@ -106,6 +108,7 @@ fn setup(
         texture: assets.get_handle("sprites/background-day.png"),
         ..Default::default()
     });
+    state.set(AppState::Playing).unwrap();
 }
 
 struct PipeSpawnTimer {
