@@ -132,7 +132,7 @@ fn spawn_pipes(
     if timer.timer.tick(time.delta()).finished() {
         // TODO: math out these constants
         const PIPE_GAP: f32 = 450.;
-        const PIPE_Y_ADJUST: f32 = -340.;
+        const PIPE_Y_ADJUST: f32 = -350.;
         const PIPE_Y_RANGE: f32 = 256.;
         let y = fastrand::f32() * PIPE_Y_RANGE + PIPE_Y_ADJUST;
         let mut transform = Transform {
