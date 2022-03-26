@@ -25,6 +25,8 @@ struct SpriteHandles {
     handles: Vec<HandleUntyped>,
 }
 
+const WORLD_SPEED: f32 = 1.5;
+
 #[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
 struct PipeSpawnLabel;
 
@@ -170,7 +172,7 @@ fn pipe_movement(
         if *x < -500. {
             commands.entity(entity).despawn();
         } else {
-            *x -= 2.;
+            *x -= WORLD_SPEED;
         }
     }
 }
