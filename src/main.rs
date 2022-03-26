@@ -72,7 +72,6 @@ fn setup(
     assets: Res<AssetServer>,
     mut atlases: ResMut<Assets<TextureAtlas>>,
     mut textures: ResMut<Assets<Image>>,
-    mut state: ResMut<State<AppState>>,
     ) {
     const BIRD_SPRITES: [&str; 3] = [
         "sprites/bluebird-upflap.png",
@@ -110,7 +109,6 @@ fn setup(
         texture: assets.get_handle("sprites/background-day.png"),
         ..Default::default()
     });
-    state.set(AppState::Playing).unwrap();
 }
 
 struct PipeSpawnTimer {
