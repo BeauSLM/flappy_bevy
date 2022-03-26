@@ -13,6 +13,9 @@ struct Bird {
 #[derive(Component)]
 struct Pipe;
 
+#[derive(Component)]
+struct Base;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum AppState {
     Setup,
@@ -44,6 +47,7 @@ fn main() {
         .add_system_set(SystemSet::on_enter(AppState::Setup).with_system(load_sprites))
         .add_system_set(SystemSet::on_update(AppState::Setup).with_system(check_loading))
         .add_system_set(SystemSet::on_enter(AppState::Waiting).with_system(setup))
+        .add_system_set(SystemSet::on_update(AppState::Waiting).with_system(bird_hover))
         .add_system_set(SystemSet::on_update(AppState::Playing)
                         .with_system(bird_movement)
                         .with_system(bird_animation)
@@ -172,6 +176,15 @@ fn pipe_movement(
         } else {
             *x -= WORLD_SPEED;
         }
+    }
+}
+
+fn base_movement(
+    mut bases: Query<(&mut Transform, Entity), With<Base>>,
+    mut commands: Commands,
+    ) {
+    for (base, entity) in bases.iter_mut() {
+
     }
 }
 
