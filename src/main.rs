@@ -191,6 +191,15 @@ fn bird_animation(
     }
 }
 
+fn bird_hover(
+    mut bird: Query<&mut Transform, With<Bird>>,
+    mut coef: Local<f32>,
+    ) {
+    const AMPLITUDE: f32 = 2.5;
+    bird.single_mut().translation.y = AMPLITUDE * coef.sin();
+    *coef = (*coef + consts::FRAC_PI_8 / 6.) % consts::TAU;
+}
+
 fn bird_movement(
     mut bird: Query<(&mut Bird, &mut Transform)>,
     keyboard: Res<Input<KeyCode>>,
