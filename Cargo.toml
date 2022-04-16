@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 bevy = "0.6.1"
 fastrand = "*"
+
+[profile.dev.package."*"]
+opt-level = 3
