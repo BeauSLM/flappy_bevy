@@ -8,6 +8,16 @@ use fastrand;
 #[derive(Component)]
 struct Bird {
     speed: f32,
+    flap_time: Timer,
+}
+
+impl Default for Bird {
+    fn default() -> Self {
+        Bird {
+            speed: 0.,
+            flap_time: Timer::from_seconds(1., true),
+        }
+    }
 }
 
 #[derive(Component)]
@@ -107,8 +117,7 @@ fn setup(
         texture_atlas: atlas_handle,
         ..Default::default()
     })
-    .insert(Bird { speed: 0. })
-    .insert(Timer::from_seconds(0.1, true));
+    .insert(Bird::default());
     commands.spawn_bundle(SpriteBundle {
         texture: assets.get_handle("sprites/background-day.png"),
         ..Default::default()
@@ -190,14 +199,14 @@ fn base_movement(
 
 fn bird_animation(
     time: Res<Time>,
-    mut query: Query<(&mut Timer, &mut TextureAtlasSprite)>,
+    mut query: Query<(&mut TextureAtlasSprite, &mut Bird)>,
     // XXX: I think I'm condemmed for this
     mut flap_ix_ix: Local<usize>,
     ) {
     static FLAP_IX: [usize; 4] = [2, 1, 2, 0];
-    let (mut timer, mut sprite) = query.single_mut();
-    timer.tick(time.delta());
-    if timer.finished() {
+    let (mut sprite, mut bird) = query.single_mut();
+    bird.flap_time.tick(time.delta());
+    if bird.flap_time.finished() {
         // XXX: LISTEN MAN IT MAKES THE BIRD FLAP RIGHT I'M SORRY
         sprite.index = FLAP_IX[*flap_ix_ix];
         *flap_ix_ix = (*flap_ix_ix + 1) % FLAP_IX.len();
