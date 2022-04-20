@@ -36,12 +36,15 @@ pub fn run() {
             .with_system(bird::setup)
             .with_system(world::setup)
         )
-        .add_system_set(SystemSet::on_update(AppState::Waiting).with_system(bird::bird_hover))
+        .add_system_set(SystemSet::on_update(AppState::Waiting)
+            .with_system(bird_hover)
+            .with_system(check_waiting)
+        )
         .add_system_set(SystemSet::on_update(AppState::Playing)
                         .with_system(bird_movement)
                         .with_system(bird_animation)
-                        .with_system(world::spawn_pipes.label(PipeSpawnLabel))
-                        .with_system(world::pipe_movement.after(PipeSpawnLabel))
+                        .with_system(spawn_pipes)
+                        .with_system(pipe_movement.after(spawn_pipes))
                         )
         .run();
 }
@@ -58,4 +61,9 @@ fn check_loading(
     if let LoadState::Loaded = assets.get_group_load_state(sprites.handles.iter().map(|handle| handle.id)) {
         state.set(AppState::Waiting).unwrap();
     }
+}
+
+fn check_waiting(mut state: ResMut<State<AppState>>, keys: Res<Input<KeyCode>>) {
+    if !keys.pressed(KeyCode::Space) { return; }
+    state.set(AppState::Playing).unwrap();
 }

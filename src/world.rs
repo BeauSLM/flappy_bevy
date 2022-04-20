@@ -9,9 +9,6 @@ struct Base;
 
 const WORLD_SPEED: f32 = 1.5;
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash, SystemLabel)]
-pub struct PipeSpawnLabel;
-
 pub struct PipeSpawnTimer {
     timer: Timer
 }
