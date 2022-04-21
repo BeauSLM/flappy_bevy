@@ -35,27 +35,31 @@ pub fn bird_animation(
 pub fn bird_hover(
     mut bird: Query<&mut Transform, With<Bird>>,
     mut coef: Local<f32>,
+    time: Res<Time>
     ) {
-    const AMPLITUDE: f32 = 2.5;
+    const AMPLITUDE: f32 = 3.5;
     bird.single_mut().translation.y = AMPLITUDE * coef.sin();
-    *coef = (*coef + consts::FRAC_PI_8 / 6.) % consts::TAU;
+    // *coef = (*coef + consts::FRAC_PI_8 / 6. * time.delta_seconds()) % consts::TAU;
+    *coef += 8.5 * time.delta_seconds();
+    *coef %= consts::TAU;
 }
 
 pub fn bird_movement(
     mut bird: Query<(&mut Bird, &mut Transform)>,
     keyboard: Res<Input<KeyCode>>,
+    time: Res<Time>
     ) {
-    const GRAVITY: f32 = 0.13;
-    const FLAP: f32 = 2.9;
+    const GRAVITY: f32 = 10.;
+    const FLAP: f32 = 300.;
     let (mut bird, mut trans) = bird.single_mut();
     if keyboard.pressed(KeyCode::Space) {
         bird.speed = FLAP;
     }
-    trans.translation.y += bird.speed;
-    let angle = if bird.speed > -1. {
+    trans.translation.y += bird.speed * time.delta_seconds();
+    let angle = if bird.speed > -300. {
         consts::FRAC_PI_8
     } else {
-        (bird.speed + 2.).atan() * 0.8
+        (bird.speed * time.delta_seconds() / 3.).atan()
     };
     trans.rotation = Quat::from_rotation_z(angle);
     bird.speed -= GRAVITY;

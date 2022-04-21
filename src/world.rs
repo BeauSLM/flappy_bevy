@@ -7,7 +7,7 @@ pub struct Pipe;
 #[derive(Component)]
 struct Base;
 
-const WORLD_SPEED: f32 = 1.5;
+const WORLD_SPEED: f32 = 125.;
 
 pub struct PipeSpawnTimer {
     timer: Timer
@@ -16,7 +16,7 @@ pub struct PipeSpawnTimer {
 impl Default for PipeSpawnTimer {
     fn default() -> Self {
         PipeSpawnTimer {
-            timer: Timer::from_seconds(1.25, true),
+            timer: Timer::from_seconds(1.5, true),
         }
     }
 }
@@ -62,13 +62,14 @@ pub fn spawn_pipes(
 pub fn pipe_movement(
     mut pipes: Query<(&mut Transform, Entity), With<Pipe>>,
     mut commands: Commands,
+    time: Res<Time>
     ) {
     for (mut transform, entity) in pipes.iter_mut() {
         let x = &mut transform.translation.x;
         if *x < -500. {
             commands.entity(entity).despawn();
         } else {
-            *x -= WORLD_SPEED;
+            *x -= WORLD_SPEED * time.delta_seconds();
         }
     }
 }
