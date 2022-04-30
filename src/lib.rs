@@ -7,6 +7,8 @@ use crate::world::*;
 mod bird;
 mod world;
 
+pub const WORLD_WIDTH: f32 = 288.;
+
 #[derive(Default)]
 struct SpriteHandles {
     handles: Vec<HandleUntyped>,
@@ -23,7 +25,7 @@ pub fn run() {
     App::new()
         // TODO: load in background then size window to it
         .insert_resource(WindowDescriptor {
-            width: 288.,
+            width: WORLD_WIDTH,
             height: 512.,
             ..Default::default()
         })
@@ -39,12 +41,16 @@ pub fn run() {
         .add_system_set(SystemSet::on_update(AppState::Waiting)
             .with_system(bird_hover)
             .with_system(check_waiting)
+            .with_system(world_movement)
+            .with_system(base_leapfrog.after(world_movement))
         )
         .add_system_set(SystemSet::on_update(AppState::Playing)
                         .with_system(bird_movement)
                         .with_system(bird_animation)
                         .with_system(spawn_pipes)
-                        .with_system(pipe_movement.after(spawn_pipes))
+                        .with_system(world_movement.after(spawn_pipes))
+                        .with_system(base_leapfrog.after(world_movement))
+                        .with_system(despawn_pipes.after(world_movement))
                         )
         .run();
 }

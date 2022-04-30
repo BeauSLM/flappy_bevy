@@ -2,12 +2,18 @@ use fastrand;
 use super::*;
 
 #[derive(Component)]
+pub struct World;
+
+#[derive(Component)]
 pub struct Pipe;
 
 #[derive(Component)]
-struct Base;
+pub struct Base;
 
-const WORLD_SPEED: f32 = 125.;
+const WORLD_SPEED: f32 = -125.;
+const BASE_WIDTH: f32 = 336.;
+const BASE_OFFSCREEN_X: f32 = -(BASE_WIDTH - (BASE_WIDTH - WORLD_WIDTH) / 2.);
+const PIPE_OFFSCREEN_X: f32 = -(52. + WORLD_WIDTH) / 2.;
 
 pub struct PipeSpawnTimer {
     timer: Timer
@@ -54,39 +60,66 @@ pub fn spawn_pipes(
             },
             ..Default::default()
         };
-        commands.spawn_bundle(bottom).insert(Pipe);
-        commands.spawn_bundle(top).insert(Pipe);
+        commands.spawn_bundle(bottom).insert(Pipe).insert(World);
+        commands.spawn_bundle(top).insert(Pipe).insert(World);
     }
 }
 
-pub fn pipe_movement(
-    mut pipes: Query<(&mut Transform, Entity), With<Pipe>>,
+pub fn despawn_pipes(
+    pipes: Query<(&Transform, Entity), With<Pipe>>,
     mut commands: Commands,
-    time: Res<Time>
     ) {
-    for (mut transform, entity) in pipes.iter_mut() {
-        let x = &mut transform.translation.x;
-        if *x < -500. {
+    for (transform, entity) in pipes.iter() {
+        if transform.translation.x < PIPE_OFFSCREEN_X {
             commands.entity(entity).despawn();
-        } else {
-            *x -= WORLD_SPEED * time.delta_seconds();
         }
     }
 }
 
-fn _base_movement(
-    mut _bases: Query<(&mut Transform, Entity), With<Base>>,
-    mut _commands: Commands,
+pub fn world_movement(
+    mut query: Query<&mut Transform, With<World>>,
+    time: Res<Time>,
     ) {
-    todo!();
+    for mut transform in query.iter_mut() {
+        transform.translation.x += WORLD_SPEED * time.delta_seconds();
+    }
+}
+
+pub fn base_leapfrog(mut query: Query<&mut Transform, With<Base>>) {
+    for mut transform in query.iter_mut() {
+        if transform.translation.x < BASE_OFFSCREEN_X {
+            transform.translation.x = BASE_WIDTH;
+        }
+    }
 }
 
 pub fn setup(
     mut commands: Commands,
     assets: Res<AssetServer>,
     ) {
+    const BASE_Y: f32 = -260.;
     commands.spawn_bundle(SpriteBundle {
         texture: assets.get_handle("sprites/background-day.png"),
         ..Default::default()
     });
+    commands.spawn_bundle(SpriteBundle {
+        texture: assets.get_handle("sprites/base.png"),
+        transform: Transform {
+            translation: Vec3::new(0., BASE_Y, 10.),
+            ..default()
+        },
+        ..Default::default()
+   })
+    .insert(Base)
+    .insert(World);
+    commands.spawn_bundle(SpriteBundle {
+        texture: assets.get_handle("sprites/base.png"),
+        transform: Transform {
+            translation: Vec3::new(BASE_WIDTH, BASE_Y, 10.),
+            ..default()
+        },
+        ..Default::default()
+    })
+    .insert(Base)
+    .insert(World);
 }
