@@ -39,31 +39,39 @@ pub fn bird_hover(
     ) {
     const AMPLITUDE: f32 = 3.5;
     bird.single_mut().translation.y = AMPLITUDE * coef.sin();
-    // *coef = (*coef + consts::FRAC_PI_8 / 6. * time.delta_seconds()) % consts::TAU;
     *coef += 8.5 * time.delta_seconds();
     *coef %= consts::TAU;
 }
 
-pub fn bird_movement(
-    mut bird: Query<(&mut Bird, &mut Transform)>,
-    keyboard: Res<Input<KeyCode>>,
-    time: Res<Time>
-    ) {
+pub fn bird_gravity(mut bird: Query<&mut Bird>) {
     const GRAVITY: f32 = 10.;
+    let mut bird = bird.single_mut();
+    bird.speed -= GRAVITY;
+}
+
+pub fn bird_flap(
+    mut bird: Query<&mut Bird>,
+    keyboard: Res<Input<KeyCode>>,
+    ) {
     const FLAP: f32 = 300.;
-    let (mut bird, mut trans) = bird.single_mut();
+    let mut bird = bird.single_mut();
     if keyboard.pressed(KeyCode::Space) {
         bird.speed = FLAP;
     }
-    trans.translation.y += bird.speed * time.delta_seconds();
+}
+
+pub fn bird_movement(
+    mut bird: Query<(&mut Bird, &mut Transform)>,
+    time: Res<Time>,
+) {
+    let (bird, mut trans) = bird.single_mut();
     let angle = if bird.speed > -300. {
         consts::FRAC_PI_8
     } else {
         (bird.speed * time.delta_seconds() / 3.).atan()
     };
     trans.rotation = Quat::from_rotation_z(angle);
-    bird.speed -= GRAVITY;
-    // terminal velocity?
+    trans.translation.y += bird.speed * time.delta_seconds();
 }
 
 pub fn setup(
