@@ -99,7 +99,7 @@ pub fn setup(
     let atlas_handle = atlases.add(atlas);
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     let bird_transform = Transform {
-        translation: Vec2::ZERO.extend(1.),
+        translation: Vec2::ZERO.extend(10.),
         ..Default::default()
     };
     // show spritesheet

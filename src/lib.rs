@@ -1,11 +1,13 @@
+mod bird;
+mod world;
+mod game_over;
 pub use bevy::{
     prelude::*,
     asset::LoadState,
 };
 use crate::bird::*;
 use crate::world::*;
-mod bird;
-mod world;
+use crate::game_over::*;
 
 pub const WORLD_WIDTH: f32 = 288.;
 
@@ -15,10 +17,11 @@ struct SpriteHandles {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-enum AppState {
+pub enum AppState {
     Setup,
     Waiting,
     Playing,
+    GameOver,
 }
 
 pub fn run() {
@@ -53,7 +56,12 @@ pub fn run() {
                         .with_system(world_movement.after(spawn_pipes))
                         .with_system(base_leapfrog.after(world_movement))
                         .with_system(despawn_pipes.after(world_movement))
+                        .with_system(bird_collision.after(despawn_pipes).after(bird_movement))
                         )
+        .add_system_set(SystemSet::on_update(AppState::GameOver)
+            .with_system(bird_gravity)
+            .with_system(bird_movement.after(bird_gravity))
+        )
         .run();
 }
 

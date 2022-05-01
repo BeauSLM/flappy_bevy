@@ -1,6 +1,7 @@
 use fastrand;
 use super::*;
 
+// XXX: World is a REALLY IMPORTANT TYPE in bevy so name this something better ffs
 #[derive(Component)]
 pub struct World;
 
@@ -40,7 +41,7 @@ pub fn spawn_pipes(
         const PIPE_Y_RANGE: f32 = 256.;
         let y = fastrand::f32() * PIPE_Y_RANGE + PIPE_Y_ADJUST;
         let mut transform = Transform {
-            translation: Vec3::new(200., y, 0.),
+            translation: Vec3::new(200., y, 10.),
             ..Default::default()
         };
         let texture = assets.get_handle("sprites/pipe-green.png");
