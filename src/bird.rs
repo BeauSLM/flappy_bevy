@@ -43,10 +43,13 @@ pub fn bird_hover(
     *coef %= consts::TAU;
 }
 
-pub fn bird_gravity(mut bird: Query<&mut Bird>) {
-    const GRAVITY: f32 = 10.;
+pub fn bird_gravity(
+    mut bird: Query<&mut Bird>,
+    time: Res<Time>,
+) {
+    const GRAVITY: f32 = 1400.;
     let mut bird = bird.single_mut();
-    bird.speed -= GRAVITY;
+    bird.speed -= GRAVITY * time.delta_seconds();
 }
 
 pub fn bird_flap(
