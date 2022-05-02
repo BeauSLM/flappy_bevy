@@ -45,13 +45,15 @@ pub fn spawn_pipes(
             ..Default::default()
         };
         let texture = assets.get_handle("sprites/pipe-green.png");
-        let bottom = SpriteBundle {
-            texture: texture.clone(),
-            transform,
-            ..Default::default()
-        };
-
+        let id = asset_spawn(
+            &mut commands,
+            &assets,
+            transform.translation,
+            "sprites/pipe-green.png",
+        );
+        commands.entity(id).insert(Pipe).insert(World);
         transform.translation.y += PIPE_GAP;
+        // TODO: find a way to flip the sprite and use the spawner function
         let top = SpriteBundle {
             texture,
             transform,
@@ -61,7 +63,6 @@ pub fn spawn_pipes(
             },
             ..Default::default()
         };
-        commands.spawn_bundle(bottom).insert(Pipe).insert(World);
         commands.spawn_bundle(top).insert(Pipe).insert(World);
     }
 }
@@ -99,28 +100,40 @@ pub fn setup(
     assets: Res<AssetServer>,
     ) {
     const BASE_Y: f32 = -260.;
+    asset_spawn(
+        &mut commands,
+        &assets,
+        Vec3::ZERO,
+        "sprites/background-day.png"
+    );
+    let id = asset_spawn(
+        &mut commands,
+        &assets,
+        Vec3::new(0., BASE_Y, 10.),
+        "sprites/base.png"
+    );
+    commands.entity(id).insert(Base).insert(World);
+    let id = asset_spawn(
+        &mut commands,
+        &assets,
+        Vec3::new(BASE_WIDTH, BASE_Y, 10.),
+        "sprites/base.png",
+    );
+    commands.entity(id).insert(Base).insert(World);
+}
+
+fn asset_spawn(
+    commands: &mut Commands,
+    assets: &Res<AssetServer>,
+    translation: Vec3,
+    name: &str,
+) -> Entity {
     commands.spawn_bundle(SpriteBundle {
-        texture: assets.get_handle("sprites/background-day.png"),
-        ..Default::default()
-    });
-    commands.spawn_bundle(SpriteBundle {
-        texture: assets.get_handle("sprites/base.png"),
+        texture: assets.get_handle(name),
         transform: Transform {
-            translation: Vec3::new(0., BASE_Y, 10.),
+            translation,
             ..default()
         },
-        ..Default::default()
-   })
-    .insert(Base)
-    .insert(World);
-    commands.spawn_bundle(SpriteBundle {
-        texture: assets.get_handle("sprites/base.png"),
-        transform: Transform {
-            translation: Vec3::new(BASE_WIDTH, BASE_Y, 10.),
-            ..default()
-        },
-        ..Default::default()
-    })
-    .insert(Base)
-    .insert(World);
+        ..default()
+    }).id()
 }
